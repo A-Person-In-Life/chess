@@ -56,18 +56,23 @@ class Game:
         self.draw_board()
         self.board.draw(self.screen)
 
+    def handleMoves(self):
+        pass
+
     def loop(self):
         running = True
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+                if event.type == pygame.mouse.get_pressed():
+                    pos = pygame.mouse.get_cursor()
+                    self.handleMoves(pos)
+                    pass
             
             self.draw()
             pygame.display.flip()
             self.clock.tick(60)
-            
-            
             
 
 if __name__ == "__main__":
