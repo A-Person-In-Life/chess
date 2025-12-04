@@ -27,7 +27,11 @@ class Board:
 
         for col, name in enumerate(order):
             self.grid[0][col] = Piece(name, 0, col, "black", pygame.image.load(f"images/black_{name}.png"))
-            self.grid[1][col] = Piece("pawn", 1, col, "black", pygame.pygame.image.load(f"images/black_pawn.png"))
+            self.grid[1][col] = Piece("pawn", 1, col, "black", pygame.image.load(f"images/black_pawn.png"))
+
+            self.grid[6][col] = Piece("pawn", 6, col, "white", pygame.image.load(f"images/white_pawn.png"))
+            self.grid[7][col] = Piece(name, 7, col, "white", pygame.image.load(f"images/white_{name}.png"))
+
     
     def draw(self, screen):
         for row in range(8):
@@ -52,18 +56,25 @@ class Game:
         self.draw_board()
         self.board.draw(self.screen)
 
+    def handleMoves(self):
+        pass
+
     def loop(self):
         running = True
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+                if event.type == pygame.mouse.get_pressed():
+                    pos = pygame.mouse.get_cursor()
+                    self.handleMoves(pos)
+                    pass
             
             self.draw()
             pygame.display.flip()
             self.clock.tick(60)
             
-            
+
 if __name__ == "__main__":
     game = Game()
     game.loop()
