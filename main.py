@@ -27,7 +27,11 @@ class Board:
 
         for col, name in enumerate(order):
             self.grid[0][col] = Piece(name, 0, col, "black", pygame.image.load(f"images/black_{name}.png"))
-            self.grid[1][col] = Piece("pawn", 1, col, "black", pygame.pygame.image.load(f"images/black_pawn.png"))
+            self.grid[1][col] = Piece("pawn", 1, col, "black", pygame.image.load(f"images/black_pawn.png"))
+
+            self.grid[6][col] = Piece("pawn", 6, col, "white", pygame.image.load(f"images/white_pawn.png"))
+            self.grid[7][col] = Piece(name, 7, col, "white", pygame.image.load(f"images/white_{name}.png"))
+
     
     def draw(self, screen):
         for row in range(8):
