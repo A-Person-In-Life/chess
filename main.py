@@ -13,9 +13,23 @@ class Piece:
         self.col = col
         self.color = color
 
-    def moveLogic(self):
-        pass
-    
+    def moveLogic(self, orginCol, orginRow, moveCol, moveRow):
+        print("logic started")
+        rowDiff = abs(orginRow - moveRow)
+        colDiff = abs(orginCol - moveCol)
+
+        if self.name == "pawn":
+            print("is pawn")
+            if orginRow == 1 or orginRow == 6:
+                if rowDiff == 1 or rowDiff == 2 and colDiff == 0:
+                    return True
+            else:
+                if rowDiff == 1 and colDiff == 0:
+                    return True
+        
+        if self.name == "rook":
+            pass
+
     def draw(self, screen):
         screen.blit(self.image, (self.col*CELL_SIZE, self.row*CELL_SIZE))
         
@@ -37,11 +51,11 @@ class Board:
 
     def move(self, orginCol, orginRow, moveCol, moveRow):
         piece = self.grid[orginCol][orginRow]
-        piece.row, piece.col = moveCol, moveRow
+        piece.row, piece.col = moveRow, moveCol
         
-        self.grid[moveCol][moveRow] = None
-        self.grid[orginCol][orginRow] = None
-        self.grid[moveCol][moveRow] = piece
+        self.grid[moveRow][moveCol] = None
+        self.grid[orginRow][orginCol] = None
+        self.grid[moveRow][moveCol] = piece
 
     def draw(self, screen):
         for row in range(8):
@@ -87,10 +101,14 @@ class Game:
             while waiting:
                 for event in pygame.event.get():
                     if event.type == pygame.MOUSEBUTTONDOWN:
-                        moveCol = event.pos[0] // 100
-                        moveRow = event.pos[1] // 100
-                        self.board.move(row, col, moveRow, moveCol)
-                        waiting = False
+                        moveRow = event.pos[0] // 100
+                        moveCol = event.pos[1] // 100
+                        if self.board.grid[moveCol][moveRow]:
+                            if not self.board.grid[moveCol][moveRow].color == self.board.grid[row][col].color:
+                                continue
+                        if self.board.grid[row][col].moveLogic(row,col,moveCol,moveRow):
+                            self.board.move(row, col, moveRow, moveCol)
+                            waiting = False
                     if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                         waiting = False
 
