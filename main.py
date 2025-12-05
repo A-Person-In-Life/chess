@@ -32,7 +32,14 @@ class Board:
             self.grid[6][col] = Piece("pawn", 6, col, "white", pygame.image.load(f"images/white_pawn.png"))
             self.grid[7][col] = Piece(name, 7, col, "white", pygame.image.load(f"images/white_{name}.png"))
 
-    
+    def move(self, orginCol, orginRow, moveCol, moveRow):
+        piece = self.grid[orginCol][orginRow]
+        piece.row, piece.col = moveCol, moveRow
+        
+        self.grid[moveCol][moveRow] = None
+        self.grid[orginCol][orginRow] = None
+        self.grid[moveCol][moveRow] = piece
+
     def draw(self, screen):
         for row in range(8):
             for col in range(8):
@@ -56,24 +63,33 @@ class Game:
         self.draw_board()
         self.board.draw(self.screen)
 
-    def handleMoves(self):
-        pass
-
     def loop(self):
         running = True
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
-                if event.type == pygame.mouse.get_pressed():
-                    pos = pygame.mouse.get_cursor()
-                    self.handleMoves(pos)
-                    pass
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    col = event.pos[0] // 100
+                    row = event.pos[1] // 100
+                    self.handleMoves(row, col)
             
             self.draw()
             pygame.display.flip()
             self.clock.tick(60)
-            
+
+    def handleMoves(self, row, col):
+        if self.board.grid[row][col] != None:
+            waiting = True
+            while waiting:
+                for event in pygame.event.get():
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        moveCol = event.pos[0] // 100
+                        moveRow = event.pos[1] // 100
+                        self.board.move(row, col, moveRow, moveCol)
+                        waiting = False
+                    if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                        waiting = False
 
 if __name__ == "__main__":
     game = Game()
