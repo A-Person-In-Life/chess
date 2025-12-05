@@ -12,6 +12,9 @@ class Piece:
         self.row = row
         self.col = col
         self.color = color
+
+    def moveLogic(self):
+        pass
     
     def draw(self, screen):
         screen.blit(self.image, (self.col*CELL_SIZE, self.row*CELL_SIZE))
