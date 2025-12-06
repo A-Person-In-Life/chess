@@ -1,8 +1,8 @@
 import pygame
 
-WIDTH, HEIGHT = 800,800
+WIDTH, HEIGHT = 800, 800
 CELL_SIZE = WIDTH // 8
-BACKGROUND_COLORS = [(109,129,150),(210,180,140)]
+BACKGROUND_COLORS = [(109, 129, 150), (210, 180, 140)]
 
 
 class Piece:
@@ -13,26 +13,43 @@ class Piece:
         self.col = col
         self.color = color
 
-    def moveLogic(self, orginCol, orginRow, moveCol, moveRow):
-        print("logic started")
-        rowDiff = abs(orginRow - moveRow)
-        colDiff = abs(orginCol - moveCol)
+    def moveLogic(self, originCol, originRow, moveCol, moveRow):
+        rowDiff = abs(originRow - moveRow)
+        colDiff = abs(originCol - moveCol)
 
         if self.name == "pawn":
-            print("is pawn")
-            if orginRow == 1 or orginRow == 6:
-                if rowDiff == 1 or rowDiff == 2 and colDiff == 0:
+            if self.color == "white":
+                rowDiff = originRow - moveRow
+            elif self.color == "black":
+                rowDiff = (originRow - moveRow) * -1
+            
+            if originRow == 1 or originRow == 6:
+                if (rowDiff == 1 or rowDiff == 2) and colDiff == 0:
                     return True
             else:
                 if rowDiff == 1 and colDiff == 0:
                     return True
         
         if self.name == "rook":
-            pass
+            if rowDiff == 0 or colDiff == 0:
+                return True
+        
+        if self.name == "bishop":
+            if rowDiff == colDiff:
+                return True
+        
+        if self.name == "queen":
+            if rowDiff == 0 or colDiff == 0 or rowDiff == colDiff:
+                return True
+        
+        if self.name == "king":
+            if rowDiff <= 1 and colDiff <= 1:
+                return True
+        
+        return False
 
     def draw(self, screen):
-        screen.blit(self.image, (self.col*CELL_SIZE, self.row*CELL_SIZE))
-        
+        screen.blit(self.image, (self.col * CELL_SIZE, self.row * CELL_SIZE))
 
 class Board:
     def __init__(self):
@@ -49,12 +66,12 @@ class Board:
             self.grid[6][col] = Piece("pawn", 6, col, "white", pygame.image.load(f"images/white_pawn.png"))
             self.grid[7][col] = Piece(name, 7, col, "white", pygame.image.load(f"images/white_{name}.png"))
 
-    def move(self, orginCol, orginRow, moveCol, moveRow):
-        piece = self.grid[orginCol][orginRow]
-        piece.row, piece.col = moveRow, moveCol
+    def move(self, originCol, originRow, moveCol, moveRow):
+        piece = self.grid[originRow][originCol]
+        piece.row = moveRow
+        piece.col = moveCol
         
-        self.grid[moveRow][moveCol] = None
-        self.grid[orginRow][orginCol] = None
+        self.grid[originRow][originCol] = None
         self.grid[moveRow][moveCol] = piece
 
     def draw(self, screen):
@@ -64,7 +81,6 @@ class Board:
                 if piece:
                     piece.draw(screen)
 
-        
 class Game:
     def __init__(self):
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -74,7 +90,7 @@ class Game:
     def draw_board(self):
         for row in range(8):
             for col in range(8):
-                pygame.draw.rect(self.screen,BACKGROUND_COLORS[(row+col)%2],(row*CELL_SIZE,col*CELL_SIZE,CELL_SIZE,CELL_SIZE))
+                pygame.draw.rect(self.screen, BACKGROUND_COLORS[(row + col) % 2], (col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE))
     
     def draw(self):
         self.draw_board()
@@ -87,8 +103,8 @@ class Game:
                 if event.type == pygame.QUIT:
                     running = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    col = event.pos[0] // 100
-                    row = event.pos[1] // 100
+                    col = event.pos[0] // CELL_SIZE
+                    row = event.pos[1] // CELL_SIZE
                     self.handleMoves(row, col)
             
             self.draw()
@@ -101,14 +117,20 @@ class Game:
             while waiting:
                 for event in pygame.event.get():
                     if event.type == pygame.MOUSEBUTTONDOWN:
-                        moveRow = event.pos[0] // 100
-                        moveCol = event.pos[1] // 100
-                        if self.board.grid[moveCol][moveRow]:
-                            if not self.board.grid[moveCol][moveRow].color == self.board.grid[row][col].color:
+                        moveCol = event.pos[0] // CELL_SIZE
+                        moveRow = event.pos[1] // CELL_SIZE
+                        
+                        if not self.board.grid[moveRow][moveCol] == None:
+                            if self.board.grid[moveRow][moveCol].color == self.board.grid[row][col].color:
+                                waiting = False
                                 continue
-                        if self.board.grid[row][col].moveLogic(row,col,moveCol,moveRow):
-                            self.board.move(row, col, moveRow, moveCol)
+                            
+                        if self.board.grid[row][col].moveLogic(col, row, moveCol, moveRow):
+                            self.board.move(col, row, moveCol, moveRow)
                             waiting = False
+                        else:
+                            waiting = False
+                            
                     if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                         waiting = False
 
