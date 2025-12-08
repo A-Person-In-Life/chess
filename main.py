@@ -73,6 +73,63 @@ class Board:
         
         self.grid[originRow][originCol] = None
         self.grid[moveRow][moveCol] = piece
+    
+    def checkPath(self,originCol, originRow, moveCol, moveRow):
+        rowDiff = abs(originRow - moveRow)
+        colDiff = abs(originCol - moveCol)
+        peice = self.grid[originRow][originCol]
+
+        if peice.name == "pawn":
+            if peice.color == "white":
+                for row in range(1, rowDiff):
+                    if self.grid[peice.row-row][peice.col] != None:
+                        return False
+            elif peice.color == "black":
+                for row, col in range(1, rowDiff):
+                    if self.grid[peice.row+row][peice.col] != None:
+                        return False
+
+        if peice.name == "bishop":
+            if peice.color == "white":
+                for row, col in zip(range(1, rowDiff), range(1, colDiff)):
+                    if self.grid[peice.row-row][peice.col-col] != None:
+                        return False
+            elif peice.color == "black":
+                for row, col in zip(range(1, rowDiff), range(1, colDiff)):
+                    if self.grid[peice.row+row][peice.col+col] != None:
+                        return False
+        
+        if peice.name == "rook":
+            if peice.color == "white":
+                for row in range(1, rowDiff):
+                    if self.grid[peice.row-row][peice.col] != None:
+                        return False
+            elif peice.color == "black":
+                for row, col in range(1, rowDiff):
+                    if self.grid[peice.row+row][peice.col] != None:
+                        return False
+        
+        if peice.name == "queen":
+            if colDiff is not 0:
+                if peice.color == "white":
+                    for row, col in zip(range(1, rowDiff), range(1, colDiff)):
+                        if self.grid[peice.row-row][peice.col-col] != None:
+                            return False
+                elif peice.color == "black":
+                    for row, col in zip(range(1, rowDiff), range(1, colDiff)):
+                        if self.grid[peice.row+row][peice.col+col] != None:
+                            return False
+            else:
+                if peice.color == "white":
+                    for row in range(1, rowDiff):
+                        if self.grid[peice.row-row][peice.col] != None:
+                            return False
+                elif peice.color == "black":
+                    for row, col in range(1, rowDiff):
+                        if self.grid[peice.row+row][peice.col] != None:
+                            return False
+                            
+        return True
 
     def draw(self, screen):
         for row in range(8):
@@ -112,6 +169,8 @@ class Game:
             self.clock.tick(60)
 
     def handleMoves(self, row, col):
+        peice = self.board.grid[row][col]
+
         if self.board.grid[row][col] != None:
             waiting = True
             while waiting:
@@ -119,15 +178,17 @@ class Game:
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         moveCol = event.pos[0] // CELL_SIZE
                         moveRow = event.pos[1] // CELL_SIZE
+                        move = self.board.grid[moveRow][moveCol]
                         
-                        if not self.board.grid[moveRow][moveCol] == None:
-                            if self.board.grid[moveRow][moveCol].color == self.board.grid[row][col].color:
+                        if not move == None:
+                            if move.color == peice.color:
                                 waiting = False
                                 continue
-                            
-                        if self.board.grid[row][col].moveLogic(col, row, moveCol, moveRow):
-                            self.board.move(col, row, moveCol, moveRow)
-                            waiting = False
+
+                        if peice.moveLogic(col, row, moveCol, moveRow):
+                            if self.board.checkPath(col, row, moveCol, moveRow):
+                                self.board.move(col, row, moveCol, moveRow)
+                                waiting = False
                         else:
                             waiting = False
                             
