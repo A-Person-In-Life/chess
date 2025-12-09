@@ -30,12 +30,41 @@ class Pawn(Piece):
             if row == start_row: #two rows forward
                 if board.grid[row+(2*side)][col] == None:
                     moves.append((row+(2*side),col))
-        #captures
+        # captures
         for colDiff in (-1, 1):
             newRow, newCol = row + side, col + colDiff
             if inside(newRow, newCol) and board.grid[newRow][newCol] != None:
                 if self.color != board.grid[newRow][newCol].color:
-                    moves.append(newRow, newCol)
+                    moves.append((newRow, newCol))
+        return moves
+
+class Bishop(Piece):
+    def get_moves(self, board):
+        moves = []
+        move
+        row, col = self.row, self.col
+        directions = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
+        isInside = True
+        collide = True
+
+        for xDir, yDir in directions:
+            move = 1
+            target = board.grid[newRow][newCol]
+            newRow = row + xDir * move
+            newCol = col + yDir * move
+
+            while isInside and collide:
+                if not inside(newRow, newCol):
+                    isInside = False
+
+                if not target == board.grid[row][col]:
+                    if target == None:
+                        moves.append((newRow, newCol))
+                    else:
+                        if target.color != self.color:
+                            moves.append((newRow, newCol))
+
+                step += 1
         return moves
 
 class Board:
@@ -47,20 +76,26 @@ class Board:
     def load_images(self):
         self.images = {
             "PawnW" : pygame.image.load("images/white_pawn.png"),
-            "PawnB" : pygame.image.load("images/black_pawn.png")
+            "PawnB" : pygame.image.load("images/black_pawn.png"),
+            "BishopW" : pygame.image.load("images/white_bishop.png")
         }
     def setup(self):
+
+        self.grid[5][2] = Bishop(5,2,"white",self.images["BishopW"])
 
         for c in range(COLS):
             self.grid[1][c] = Pawn(1, c, "black", self.images["PawnB"])
             self.grid[6][c] = Pawn(6, c, "white", self.images["PawnW"])
     #what data type is piece in this context and why is it a problem
     def move(self, piece, destRow, destCol):
-        if (destRow, destCol) in piece.get_moves():
+        # Ensure we call get_moves with the board and check membership
+        if (destRow, destCol) in piece.get_moves(self):
+            # remove from origin
             self.grid[piece.row][piece.col] = None
+            # update piece coords
             piece.row, piece.col = destRow, destCol
-            self.grid[destRow][destCol] = self.grid[piece.row][piece.col]
-            
+            # place piece object at destination
+            self.grid[destRow][destCol] = piece
 
     def draw(self, screen):
         for row in range(8):
@@ -91,9 +126,9 @@ class Game:
                 if event.type == pygame.QUIT:
                     running = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    col = event.pos[0] // CELL_SIZE
-                    row = event.pos[1] // CELL_SIZE
-                    self.handleMoves(row, col)
+                    row = event.pos[0] // CELL_SIZE
+                    col = event.pos[1] // CELL_SIZE
+                    print(self.board.grid[col][row].get_moves(self.board))
             
             self.draw()
             pygame.display.flip()
