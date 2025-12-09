@@ -41,31 +41,56 @@ class Pawn(Piece):
 class Bishop(Piece):
     def get_moves(self, board):
         moves = []
-        move
         row, col = self.row, self.col
         directions = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
-        isInside = True
-        collide = True
 
         for xDir, yDir in directions:
             move = 1
-            target = board.grid[newRow][newCol]
-            newRow = row + xDir * move
-            newCol = col + yDir * move
+            blocked = False
+            while not blocked:
+                newRow = row + xDir * move
+                newCol = col + yDir * move
 
-            while isInside and collide:
                 if not inside(newRow, newCol):
-                    isInside = False
+                    blocked = True
+                target = board.grid[newRow][newCol]
 
-                if not target == board.grid[row][col]:
-                    if target == None:
+                if target == None:
+                    moves.append((newRow, newCol))
+                else:
+                    if target.color != self.color:
                         moves.append((newRow, newCol))
-                    else:
-                        if target.color != self.color:
-                            moves.append((newRow, newCol))
+                    blocked = True
 
-                step += 1
+                move += 1
         return moves
+
+class Rook(Piece):
+    def get_moves(self, board):
+        moves = []
+        row, col = self.row, self.col
+        directions = (-1,1)
+    
+        for dir in directions:
+            move = 1
+            blocked = False
+            while not blocked:
+                newRow = row + dir * move
+
+                if not inside(newRow,col):
+                    blocked = True
+                
+                target = board.grid[newRow][col]
+                
+                if target == None:
+                    moves.append((newRow, col))
+                else:
+                    if target.color != self.color:
+                        moves.append((newRow, col))
+                    blocked = True
+                
+                move += 1
+        pass
 
 class Board:
     def __init__(self):
@@ -77,15 +102,24 @@ class Board:
         self.images = {
             "PawnW" : pygame.image.load("images/white_pawn.png"),
             "PawnB" : pygame.image.load("images/black_pawn.png"),
-            "BishopW" : pygame.image.load("images/white_bishop.png")
+            "BishopW": pygame.image.load("images/white_bishop.png"),
+            "BishopB": pygame.image.load("images/black_bishop.png"),
+            "RookW": pygame.image.load("images/white_rook.png"),
+            "RookB": pygame.image.load("images/black_rook.png")
         }
     def setup(self):
 
-        self.grid[5][2] = Bishop(5,2,"white",self.images["BishopW"])
+        self.grid[0][0] = Rook(0,0,"black",self.images["RookB"])
+
+        self.grid[0][2] = Bishop(0,2,"black",self.images["BishopB"])
+        self.grid[0][5] = Bishop(0,5,"black",self.images["BishopB"])
+        self.grid[7][2] = Bishop(7,2,"white",self.images["BishopW"])
+        self.grid[7][5] = Bishop(7,5,"white",self.images["BishopW"])
 
         for c in range(COLS):
             self.grid[1][c] = Pawn(1, c, "black", self.images["PawnB"])
             self.grid[6][c] = Pawn(6, c, "white", self.images["PawnW"])
+
     #what data type is piece in this context and why is it a problem
     def move(self, piece, destRow, destCol):
         # Ensure we call get_moves with the board and check membership
