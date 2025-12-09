@@ -3,133 +3,64 @@ import pygame
 WIDTH, HEIGHT = 800, 800
 CELL_SIZE = WIDTH // 8
 BACKGROUND_COLORS = [(109, 129, 150), (210, 180, 140)]
+ROWS, COLS = 8, 8
 
+def inside(x, y):
+    return 0 <= x <= 7 and 0 <= y <= 7
 
 class Piece:
-    def __init__(self, name, row, col, color, image):
-        self.name = name
+    def __init__(self, row, col, color, image):
         self.image = image
         self.row = row
         self.col = col
         self.color = color
 
-    def moveLogic(self, originCol, originRow, moveCol, moveRow):
-        rowDiff = abs(originRow - moveRow)
-        colDiff = abs(originCol - moveCol)
-
-        if self.name == "pawn":
-            if self.color == "white":
-                rowDiff = originRow - moveRow
-            elif self.color == "black":
-                rowDiff = (originRow - moveRow) * -1
-            
-            if originRow == 1 or originRow == 6:
-                if (rowDiff == 1 or rowDiff == 2) and colDiff == 0:
-                    return True
-            else:
-                if rowDiff == 1 and colDiff == 0:
-                    return True
-        
-        if self.name == "rook":
-            if rowDiff == 0 or colDiff == 0:
-                return True
-        
-        if self.name == "bishop":
-            if rowDiff == colDiff:
-                return True
-        
-        if self.name == "queen":
-            if rowDiff == 0 or colDiff == 0 or rowDiff == colDiff:
-                return True
-        
-        if self.name == "king":
-            if rowDiff <= 1 and colDiff <= 1:
-                return True
-        
-        return False
-
     def draw(self, screen):
         screen.blit(self.image, (self.col * CELL_SIZE, self.row * CELL_SIZE))
+
+class Pawn(Piece):
+    def get_moves(self, board):
+        moves = []
+        side = -1 if self.color == "white" else 1
+        row, col = self.row, self.col
+        #one row forward
+        if inside(row+side, col) and board.grid[row+side][col] == None: 
+            moves.append((row+side,col))
+            start_row = 6 if self.color == "white" else 1
+            if row == start_row: #two rows forward
+                if board.grid[row+(2*side)][col] == None:
+                    moves.append((row+(2*side),col))
+        #captures
+        for colDiff in (-1, 1):
+            newRow, newCol = row + side, col + colDiff
+            if inside(newRow, newCol) and board.grid[newRow][newCol] != None:
+                if self.color != board.grid[newRow][newCol].color:
+                    moves.append(newRow, newCol)
+        return moves
 
 class Board:
     def __init__(self):
         self.grid = [[None for i in range(8)] for j in range(8)]
+        self.load_images()
         self.setup()
-        
+
+    def load_images(self):
+        self.images = {
+            "PawnW" : pygame.image.load("images/white_pawn.png"),
+            "PawnB" : pygame.image.load("images/black_pawn.png")
+        }
     def setup(self):
-        order = ["rook", "knight", "bishop", "queen", "king", "bishop", "knight", "rook"]
 
-        for col, name in enumerate(order):
-            self.grid[0][col] = Piece(name, 0, col, "black", pygame.image.load(f"images/black_{name}.png"))
-            self.grid[1][col] = Piece("pawn", 1, col, "black", pygame.image.load(f"images/black_pawn.png"))
-
-            self.grid[6][col] = Piece("pawn", 6, col, "white", pygame.image.load(f"images/white_pawn.png"))
-            self.grid[7][col] = Piece(name, 7, col, "white", pygame.image.load(f"images/white_{name}.png"))
-
-    def move(self, originCol, originRow, moveCol, moveRow):
-        piece = self.grid[originRow][originCol]
-        piece.row = moveRow
-        piece.col = moveCol
-        
-        self.grid[originRow][originCol] = None
-        self.grid[moveRow][moveCol] = piece
-    
-    def checkPath(self,originCol, originRow, moveCol, moveRow):
-        rowDiff = abs(originRow - moveRow)
-        colDiff = abs(originCol - moveCol)
-        peice = self.grid[originRow][originCol]
-
-        if peice.name == "pawn":
-            if peice.color == "white":
-                for row in range(1, rowDiff):
-                    if self.grid[peice.row-row][peice.col] != None:
-                        return False
-            elif peice.color == "black":
-                for row, col in range(1, rowDiff):
-                    if self.grid[peice.row+row][peice.col] != None:
-                        return False
-
-        if peice.name == "bishop":
-            if peice.color == "white":
-                for row, col in zip(range(1, rowDiff), range(1, colDiff)):
-                    if self.grid[peice.row-row][peice.col-col] != None:
-                        return False
-            elif peice.color == "black":
-                for row, col in zip(range(1, rowDiff), range(1, colDiff)):
-                    if self.grid[peice.row+row][peice.col+col] != None:
-                        return False
-        
-        if peice.name == "rook":
-            if peice.color == "white":
-                for row in range(1, rowDiff):
-                    if self.grid[peice.row-row][peice.col] != None:
-                        return False
-            elif peice.color == "black":
-                for row, col in range(1, rowDiff):
-                    if self.grid[peice.row+row][peice.col] != None:
-                        return False
-        
-        if peice.name == "queen":
-            if colDiff is not 0:
-                if peice.color == "white":
-                    for row, col in zip(range(1, rowDiff), range(1, colDiff)):
-                        if self.grid[peice.row-row][peice.col-col] != None:
-                            return False
-                elif peice.color == "black":
-                    for row, col in zip(range(1, rowDiff), range(1, colDiff)):
-                        if self.grid[peice.row+row][peice.col+col] != None:
-                            return False
-            else:
-                if peice.color == "white":
-                    for row in range(1, rowDiff):
-                        if self.grid[peice.row-row][peice.col] != None:
-                            return False
-                elif peice.color == "black":
-                    for row, col in range(1, rowDiff):
-                        if self.grid[peice.row+row][peice.col] != None:
-                            return False
-                            
-        return True
+        for c in range(COLS):
+            self.grid[1][c] = Pawn(1, c, "black", self.images["PawnB"])
+            self.grid[6][c] = Pawn(6, c, "white", self.images["PawnW"])
+    #what data type is piece in this context and why is it a problem
+    def move(self, piece, destRow, destCol):
+        if (destRow, destCol) in piece.get_moves():
+            self.grid[piece.row][piece.col] = None
+            piece.row, piece.col = destRow, destCol
+            self.grid[destRow][destCol] = self.grid[piece.row][piece.col]
+            
 
     def draw(self, screen):
         for row in range(8):
@@ -167,33 +98,10 @@ class Game:
             self.draw()
             pygame.display.flip()
             self.clock.tick(60)
+    
+    def handleMoves():
+        pass
 
-    def handleMoves(self, row, col):
-        peice = self.board.grid[row][col]
-
-        if self.board.grid[row][col] != None:
-            waiting = True
-            while waiting:
-                for event in pygame.event.get():
-                    if event.type == pygame.MOUSEBUTTONDOWN:
-                        moveCol = event.pos[0] // CELL_SIZE
-                        moveRow = event.pos[1] // CELL_SIZE
-                        move = self.board.grid[moveRow][moveCol]
-                        
-                        if not move == None:
-                            if move.color == peice.color:
-                                waiting = False
-                                continue
-
-                        if peice.moveLogic(col, row, moveCol, moveRow):
-                            if self.board.checkPath(col, row, moveCol, moveRow):
-                                self.board.move(col, row, moveCol, moveRow)
-                                waiting = False
-                        else:
-                            waiting = False
-                            
-                    if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                        waiting = False
 
 if __name__ == "__main__":
     game = Game()
