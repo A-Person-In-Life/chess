@@ -198,6 +198,7 @@ class Board:
             piece.row, piece.col = destRow, destCol
             # place piece object at destination
             self.grid[destRow][destCol] = piece
+        return True
 
     def draw(self, screen):
         for row in range(8):
@@ -238,7 +239,6 @@ class Game:
     
     def handleMoves(self,row,col):
         pass
-
 
 if __name__ == "__main__":
     game = Game()
