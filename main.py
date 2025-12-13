@@ -69,27 +69,51 @@ class Rook(Piece):
     def get_moves(self, board):
         moves = []
         row, col = self.row, self.col
-        directions = (-1,1)
+        directions = [(-1,0),(1,0),(0,-1),(0,1)]
     
-        for dir in directions:
+        for xDir, yDir in directions:
             move = 1
             blocked = False
             while not blocked:
-                newRow = row + dir * move
+                newRow = row + xDir * move
+                newCol = col + yDir * move
 
-                if not inside(newRow,col):
+                if not inside(newRow,newCol):
                     blocked = True
                 
-                target = board.grid[newRow][col]
+                target = board.grid[newRow][newCol]
                 
                 if target == None:
-                    moves.append((newRow, col))
+                    moves.append((newRow, newCol))
                 else:
                     if target.color != self.color:
-                        moves.append((newRow, col))
+                        moves.append((newRow, newCol))
                     blocked = True
                 
                 move += 1
+        pass
+
+class Queen(Piece):
+    def get_moves(self, board):
+        moves = []
+        row, col = self.row, self.col
+        directions = [(1,1),(1,-1),(1,0),(-1,1),(-1,-1),(-1,0),(0,1),(0,-1),(0,0)]
+
+        for xDir, yDir in directions:
+            move = 1
+            blocked = False
+            while not blocked:
+                newRow = row + xDir * move
+                newCol = row + yDir * move
+
+                if not inside(newRow, newCol):
+                    blocked = True
+                
+                target = board.grid[newRow][newCol]
+
+                if target == None:
+                    moves.append(newRow)
+            pass
         pass
 
 class Board:
