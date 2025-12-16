@@ -69,28 +69,38 @@ class Rook(Piece):
     def get_moves(self, board):
         moves = []
         row, col = self.row, self.col
-        directions = (-1,1)
-    
-        for dir in directions:
+        directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+
+        for dirRow, dirCol in directions:
             move = 1
             blocked = False
             while not blocked:
-                newRow = row + dir * move
+                newRow = row + dirRow * move
+                newCol = col + dirCol * move
 
-                if not inside(newRow,col):
+                if not inside(newRow, newCol):
                     blocked = True
-                
-                target = board.grid[newRow][col]
-                
-                if target == None:
-                    moves.append((newRow, col))
+
+                target = board.grid[newRow][newCol]
+
+                if target is None:
+                    moves.append((newRow, newCol))
                 else:
                     if target.color != self.color:
-                        moves.append((newRow, col))
+                        moves.append((newRow, newCol))
                     blocked = True
-                
+
                 move += 1
+
+        return moves
+
+class Knight(Piece):
+    def get_moves(self,board):
         pass
+
+class Queen(Piece):
+    pass
+    
 
 class Board:
     def __init__(self):
@@ -110,6 +120,9 @@ class Board:
     def setup(self):
 
         self.grid[0][0] = Rook(0,0,"black",self.images["RookB"])
+        self.grid[0][7] = Rook(0,7,"black",self.images["RookB"])
+        self.grid[7][0] = Rook(7,0,"white",self.images["RookW"])
+        self.grid[7][7] = Rook(7,7,"white", self.images["RookW"])
 
         self.grid[0][2] = Bishop(0,2,"black",self.images["BishopB"])
         self.grid[0][5] = Bishop(0,5,"black",self.images["BishopB"])
