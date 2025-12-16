@@ -53,50 +53,96 @@ class Bishop(Piece):
 
                 if not inside(newRow, newCol):
                     blocked = True
-                target = board.grid[newRow][newCol]
 
-                if target == None:
-                    moves.append((newRow, newCol))
                 else:
-                    if target.color != self.color:
-                        moves.append((newRow, newCol))
-                    blocked = True
+                    target = board.grid[newRow][newCol]
 
-                move += 1
+                    if target == None:
+                        moves.append((newRow, newCol))
+                    else:
+                        if target.color != self.color:
+                            moves.append((newRow, newCol))
+                        blocked = True
+
+                    move += 1
         return moves
+
 
 class Rook(Piece):
     def get_moves(self, board):
         moves = []
         row, col = self.row, self.col
-        directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
-
-        for dirRow, dirCol in directions:
+        directions = [(-1,0),(1,0),(0,-1),(0,1)]
+    
+        for xDir, yDir in directions:
             move = 1
             blocked = False
             while not blocked:
-                newRow = row + dirRow * move
-                newCol = col + dirCol * move
+                newRow = row + xDir * move
+                newCol = col + yDir * move
+
+                if not inside(newRow,newCol):
+                    blocked = True
+                
+                else:
+                    
+                    target = board.grid[newRow][newCol]
+                    
+                    if target == None:
+                        moves.append((newRow, newCol))
+                    else:
+                        if target.color != self.color:
+                            moves.append((newRow, newCol))
+                        blocked = True
+                    
+                    move += 1
+        return moves
+
+class Queen(Piece):
+    def get_moves(self, board):
+        moves = []
+        row, col = self.row, self.col
+        directions = [(-1, -1),(-1, 0),(-1, 1),(0, -1),(0, 1),(1, -1),(1, 0),(1, 1)]
+
+        for xDir, yDir in directions:
+            move = 1
+            blocked = False
+            while not blocked:
+                newRow = row + xDir * move
+                newCol = col + yDir * move
 
                 if not inside(newRow, newCol):
                     blocked = True
-
-                target = board.grid[newRow][newCol]
-
-                if target is None:
-                    moves.append((newRow, newCol))
+                
                 else:
-                    if target.color != self.color:
+                    
+                    target = board.grid[newRow][newCol]
+
+                    if target == None:
                         moves.append((newRow, newCol))
-                    blocked = True
-
-                move += 1
-
+                    else:
+                        if target.color != self.color:
+                            moves.append((newRow, newCol))
+                        blocked = True
+                    
+                    move += 1
         return moves
 
 class Knight(Piece):
-    def get_moves(self,board):
-        pass
+    def get_moves(self, board):
+        moves = []
+        row, col = self.row, self.col
+        knightMoves = [(row+1,col+2),(row+1,col-2),(row-1,col-2),(row-1,col+2),(row+2,col-1),(row+2,col+1),(row-1,col-2),(row-1,col+2)]
+        for moveRow, moveCol in knightMoves:
+            if inside(moveRow,moveCol):
+                target = board.grid[moveRow][moveCol]
+                if target == None:
+                    moves.append((moveRow, moveCol))
+                else:
+                    if target.color != self.color:
+                        moves.append((moveRow, moveCol))
+        return moves
+
 
 class Queen(Piece):
     pass
@@ -115,25 +161,38 @@ class Board:
             "BishopW": pygame.image.load("images/white_bishop.png"),
             "BishopB": pygame.image.load("images/black_bishop.png"),
             "RookW": pygame.image.load("images/white_rook.png"),
-            "RookB": pygame.image.load("images/black_rook.png")
+            "RookB": pygame.image.load("images/black_rook.png"),
+            "QueenW": pygame.image.load("images/white_queen.png"),
+            "QueenB": pygame.image.load("images/black_queen.png"),
+            "KnightW": pygame.image.load("images/white_knight.png"),
+            "KnightB": pygame.image.load("images/black_knight.png"),
         }
     def setup(self):
 
         self.grid[0][0] = Rook(0,0,"black",self.images["RookB"])
         self.grid[0][7] = Rook(0,7,"black",self.images["RookB"])
         self.grid[7][0] = Rook(7,0,"white",self.images["RookW"])
-        self.grid[7][7] = Rook(7,7,"white", self.images["RookW"])
+        self.grid[7][7] = Rook(7,7,"white",self.images["RookW"])
 
         self.grid[0][2] = Bishop(0,2,"black",self.images["BishopB"])
         self.grid[0][5] = Bishop(0,5,"black",self.images["BishopB"])
         self.grid[7][2] = Bishop(7,2,"white",self.images["BishopW"])
         self.grid[7][5] = Bishop(7,5,"white",self.images["BishopW"])
 
+        self.grid[0][4] = Queen(0,4,"black",self.images["QueenB"])
+        self.grid[7][4] = Queen(7,4,"white",self.images["QueenW"])
+
+        self.grid[0][1] = Knight(0,1,"black",self.images["KnightB"])
+        self.grid[0][6] = Knight(0,6,"white",self.images["KnightB"])
+        self.grid[7][1] = Knight(7,1,"black",self.images["KnightW"])
+        self.grid[7][6] = Knight(7,6,"black",self.images["KnightW"])
+                                
         for c in range(COLS):
             self.grid[1][c] = Pawn(1, c, "black", self.images["PawnB"])
             self.grid[6][c] = Pawn(6, c, "white", self.images["PawnW"])
 
     #what data type is piece in this context and why is it a problem
+    #an object? But that should work right?
     def move(self, piece, destRow, destCol):
         # Ensure we call get_moves with the board and check membership
         if (destRow, destCol) in piece.get_moves(self):
@@ -143,6 +202,7 @@ class Board:
             piece.row, piece.col = destRow, destCol
             # place piece object at destination
             self.grid[destRow][destCol] = piece
+        return True
 
     def draw(self, screen):
         for row in range(8):
@@ -175,15 +235,14 @@ class Game:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     row = event.pos[0] // CELL_SIZE
                     col = event.pos[1] // CELL_SIZE
-                    print(self.board.grid[col][row].get_moves(self.board))
+                    self.handleMoves(row,col)
             
             self.draw()
             pygame.display.flip()
             self.clock.tick(60)
     
-    def handleMoves():
+    def handleMoves(self,row,col):
         pass
-
 
 if __name__ == "__main__":
     game = Game()
