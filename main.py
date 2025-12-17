@@ -132,7 +132,7 @@ class Knight(Piece):
     def get_moves(self, board):
         moves = []
         row, col = self.row, self.col
-        knightMoves = [(row+1,col+2),(row+1,col-2),(row-1,col-2),(row-1,col+2),(row+2,col-1),(row+2,col+1),(row-1,col-2),(row-1,col+2)]
+        knightMoves = [(row+1,col+2),(row+1,col-2),(row-1,col+2),(row-1,col-2),(row+2,col+1),(row+2,col-1),(row-2,col+1),(row-2,col-1)]
         for moveRow, moveCol in knightMoves:
             if inside(moveRow,moveCol):
                 target = board.grid[moveRow][moveCol]
@@ -179,9 +179,9 @@ class Board:
         self.grid[7][4] = Queen(7,4,"white",self.images["QueenW"])
 
         self.grid[0][1] = Knight(0,1,"black",self.images["KnightB"])
-        self.grid[0][6] = Knight(0,6,"white",self.images["KnightB"])
-        self.grid[7][1] = Knight(7,1,"black",self.images["KnightW"])
-        self.grid[7][6] = Knight(7,6,"black",self.images["KnightW"])
+        self.grid[0][6] = Knight(0,6,"black",self.images["KnightB"])
+        self.grid[7][1] = Knight(7,1,"white",self.images["KnightW"])
+        self.grid[7][6] = Knight(7,6,"white",self.images["KnightW"])
                                 
         for c in range(COLS):
             self.grid[1][c] = Pawn(1, c, "black", self.images["PawnB"])
@@ -229,16 +229,28 @@ class Game:
                 if event.type == pygame.QUIT:
                     running = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    row = event.pos[0] // CELL_SIZE
-                    col = event.pos[1] // CELL_SIZE
+                    col = event.pos[0] // CELL_SIZE
+                    row = event.pos[1] // CELL_SIZE
                     self.handleMoves(row,col)
             
             self.draw()
             pygame.display.flip()
             self.clock.tick(60)
     
-    def handleMoves(self,row,col):
-        pass
+    def handleMoves(self, row, col):
+        piece = self.board.grid[row][col]
+        if piece is not None:
+            print("is piece")
+            waiting = True
+            while waiting:
+                for event in pygame.event.get():
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        moveCol = event.pos[0] // CELL_SIZE
+                        moveRow = event.pos[1] // CELL_SIZE
+                        self.board.move(piece, moveRow, moveCol)
+                        waiting = False
+                    if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                        waiting = False
 
 if __name__ == "__main__":
     game = Game()
