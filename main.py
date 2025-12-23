@@ -1,5 +1,8 @@
 import pygame
 
+#task is to seperate the logic and gamestates from the pygame drawing aspect so that the AI will never even touch pygame when training.
+
+
 WIDTH, HEIGHT = 800, 800
 CELL_SIZE = WIDTH // 8
 BACKGROUND_COLORS = [(109, 129, 150), (210, 180, 140), (100, 100, 100)]
@@ -63,24 +66,27 @@ class Pawn(Piece):
                     moves.append((newRow, newCol))
         return moves
     
+#try, in another file, to refactor the movement system to hold all possible moves for each piece efficiently and find an algorithm to update those moves only when nec
 class King(Piece):
     def get_moves(self,board):
         moves = []
         row, col = self.row, self.col
-        directions = [(1,0),(1,1),(0,0),(0,1),(-1,1),(-1,-1),(-1,0),(0,-1),(1,-1)]
-        
+        directions = [(1,0),(1,1),(0,1),(-1,1),(-1,-1),(-1,0),(0,-1),(1,-1)]
         for xDir, yDir in directions:
             moveRow = row + 1 * xDir
             moveCol = col + 1 * yDir
             if inside(moveRow,moveCol):
                 target = board.grid[moveRow][moveCol]
-                if target == None:
-                    moves.append((moveRow, moveCol))
-                else:
-                    if target.color != self.color:
+                if not self.inCheck(target, board, enemyMove):
+                    if target == None:
                         moves.append((moveRow, moveCol))
+                    else:
+                        if target.color != self.color:
+                            moves.append((moveRow, moveCol))
         return moves
-
+    
+    def inCheck(self, target, board):
+        pass
 
 class Bishop(Piece):
     def get_moves(self, board):
@@ -132,6 +138,7 @@ class Board:
             "QueenB": pygame.image.load("images/black_queen.png"),
             "KnightW": pygame.image.load("images/white_knight.png"),
             "KnightB": pygame.image.load("images/black_knight.png"),
+            "KingB": pygame.image.load("images/black_king.png")
         }
     def setup(self):
 
@@ -148,6 +155,8 @@ class Board:
         self.grid[0][4] = Queen(0,4,"black",self.images["QueenB"])
         self.grid[7][4] = Queen(7,4,"white",self.images["QueenW"])
 
+        self.grid[0][3] = King(0,3,"black",self.images["KingB"])
+
         self.grid[0][1] = Knight(0,1,"black",self.images["KnightB"])
         self.grid[0][6] = Knight(0,6,"black",self.images["KnightB"])
         self.grid[7][1] = Knight(7,1,"white",self.images["KnightW"])
@@ -161,13 +170,11 @@ class Board:
     #an object? But that should work right?
     def move(self, piece, destRow, destCol):
         # Ensure we call get_moves with the board and check membership
-        if (destRow, destCol) in piece.get_moves(self):
-            # remove from origin
-            self.grid[piece.row][piece.col] = None
-            # update piece coords
-            piece.row, piece.col = destRow, destCol
-            # place piece object at destination
-            self.grid[destRow][destCol] = piece
+        if (destRow, destCol) not in piece.get_moves(self):
+            return False
+        self.grid[piece.row][piece.col] = None    
+        piece.row, piece.col = destRow, destCol
+        self.grid[destRow][destCol] = piece#add later for AI
         return True
 
     def draw(self, screen):
@@ -177,7 +184,10 @@ class Board:
                 if piece:
                     piece.draw(screen)
 
+import pygame
+
 class Game:
+
     def __init__(self):
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         self.clock = pygame.time.Clock()
@@ -208,17 +218,19 @@ class Game:
                 if event.type == pygame.QUIT:
                     running = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    row = event.pos[0] // CELL_SIZE
-                    col = event.pos[1] // CELL_SIZE
-                    self.handleMoves(row,col)
-            
+                    col = event.pos[0] // CELL_SIZE
+                    row = event.pos[1] // CELL_SIZE 
+                    if self.selected_piece is None:
+                        if self.board.grid[row][col] is not None and self.board.grid[row][col].color == self.turn:
+                            self.selected_piece = self.board.grid[row][col]
+                            print(self.board.grid[row][col])
+                    else:
+                        if self.board.move(self.selected_piece,row,col):
+                            self.turn = "white" if self.turn == "black" else "white"
+                            self.selected_piece = None
             self.draw()
             pygame.display.flip()
             self.clock.tick(60)
-    
-    def handleMoves(self,row,col):
-        pass
 
-if __name__ == "__main__":
-    game = Game()
-    game.loop()
+game = Game()
+game.loop()
