@@ -208,20 +208,17 @@ class Game:
                 if event.type == pygame.QUIT:
                     running = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    col = event.pos[0] // CELL_SIZE
-                    row = event.pos[1] // CELL_SIZE 
-                    if self.selected_piece is None:
-                        if self.board.grid[row][col] is not None and self.board.grid[row][col].color == self.turn:
-                            self.selected_piece = self.board.grid[row][col]
-                            print(self.board.grid[row][col])
-                    else:
-                        if self.board.move(self.selected_piece,row,col):
-                            self.turn = "white" if self.turn == "black" else "white"
-                            self.selected_piece = None
+                    row = event.pos[0] // CELL_SIZE
+                    col = event.pos[1] // CELL_SIZE
+                    self.handleMoves(row,col)
+            
             self.draw()
             pygame.display.flip()
             self.clock.tick(60)
-        
+    
+    def handleMoves(self,row,col):
+        pass
+
 if __name__ == "__main__":
     game = Game()
     game.loop()
