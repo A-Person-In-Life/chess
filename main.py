@@ -1,8 +1,11 @@
 import pygame
 
+#task is to seperate the logic and gamestates from the pygame drawing aspect so that the AI will never even touch pygame when training.
+
+
 WIDTH, HEIGHT = 800, 800
 CELL_SIZE = WIDTH // 8
-BACKGROUND_COLORS = [(109, 129, 150), (210, 180, 140)]
+BACKGROUND_COLORS = [(109, 129, 150), (210, 180, 140), (100, 100, 100)]
 ROWS, COLS = 8, 8
 
 def inside(x, y):
@@ -17,7 +20,32 @@ class Piece:
 
     def draw(self, screen):
         screen.blit(self.image, (self.col * CELL_SIZE, self.row * CELL_SIZE))
+    
+    def handleSlidingMoves(self, directions, board):
+        moves = []
+        row, col = self.row, self.col
 
+        for xDir, yDir in directions:
+            step = 1
+            blocked = False
+            while not blocked:
+                newRow = row + xDir * step
+                newCol = col + yDir * step
+
+                if not inside(newRow, newCol):
+                    blocked = True
+                else:
+                    target = board.grid[newRow][newCol]
+
+                    if target is None:
+                        moves.append((newRow, newCol))
+                    else:
+                        if target.color != self.color:
+                            moves.append((newRow, newCol))
+                        blocked = True
+                    step += 1
+        return moves
+    
 class Pawn(Piece):
     def get_moves(self, board):
         moves = []
@@ -37,96 +65,43 @@ class Pawn(Piece):
                 if self.color != board.grid[newRow][newCol].color:
                     moves.append((newRow, newCol))
         return moves
+    
+#try, in another file, to refactor the movement system to hold all possible moves for each piece efficiently and find an algorithm to update those moves only when nec
+class King(Piece):
+    def get_moves(self,board):
+        moves = []
+        row, col = self.row, self.col
+        directions = [(1,0),(1,1),(0,1),(-1,1),(-1,-1),(-1,0),(0,-1),(1,-1)]
+        for xDir, yDir in directions:
+            moveRow = row + 1 * xDir
+            moveCol = col + 1 * yDir
+            if inside(moveRow,moveCol):
+                target = board.grid[moveRow][moveCol]
+                if not self.inCheck(target, board, enemyMove):
+                    if target == None:
+                        moves.append((moveRow, moveCol))
+                    else:
+                        if target.color != self.color:
+                            moves.append((moveRow, moveCol))
+        return moves
+    
+    def inCheck(self, target, board):
+        pass
 
 class Bishop(Piece):
     def get_moves(self, board):
-        moves = []
-        row, col = self.row, self.col
         directions = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
-
-        for xDir, yDir in directions:
-            move = 1
-            blocked = False
-            while not blocked:
-                newRow = row + xDir * move
-                newCol = col + yDir * move
-
-                if not inside(newRow, newCol):
-                    blocked = True
-
-                else:
-                    target = board.grid[newRow][newCol]
-
-                    if target == None:
-                        moves.append((newRow, newCol))
-                    else:
-                        if target.color != self.color:
-                            moves.append((newRow, newCol))
-                        blocked = True
-
-                    move += 1
-        return moves
-
-
+        return self.handleSlidingMoves(directions, board)
+    
 class Rook(Piece):
     def get_moves(self, board):
-        moves = []
-        row, col = self.row, self.col
         directions = [(-1,0),(1,0),(0,-1),(0,1)]
-    
-        for xDir, yDir in directions:
-            move = 1
-            blocked = False
-            while not blocked:
-                newRow = row + xDir * move
-                newCol = col + yDir * move
-
-                if not inside(newRow,newCol):
-                    blocked = True
-                
-                else:
-                    
-                    target = board.grid[newRow][newCol]
-                    
-                    if target == None:
-                        moves.append((newRow, newCol))
-                    else:
-                        if target.color != self.color:
-                            moves.append((newRow, newCol))
-                        blocked = True
-                    
-                    move += 1
-        return moves
+        return self.handleSlidingMoves(directions, board)
 
 class Queen(Piece):
     def get_moves(self, board):
-        moves = []
-        row, col = self.row, self.col
         directions = [(-1, -1),(-1, 0),(-1, 1),(0, -1),(0, 1),(1, -1),(1, 0),(1, 1)]
-
-        for xDir, yDir in directions:
-            move = 1
-            blocked = False
-            while not blocked:
-                newRow = row + xDir * move
-                newCol = col + yDir * move
-
-                if not inside(newRow, newCol):
-                    blocked = True
-                
-                else:
-                    
-                    target = board.grid[newRow][newCol]
-
-                    if target == None:
-                        moves.append((newRow, newCol))
-                    else:
-                        if target.color != self.color:
-                            moves.append((newRow, newCol))
-                        blocked = True
-                    
-                    move += 1
-        return moves
+        return self.handleSlidingMoves(directions, board)
 
 class King(Piece):
     def get_moves(self,board):
@@ -150,8 +125,10 @@ class Knight(Piece):
     def get_moves(self, board):
         moves = []
         row, col = self.row, self.col
-        knightMoves = [(row+1,col+2),(row+1,col-2),(row-1,col+2),(row-1,col-2),(row+2,col+1),(row+2,col-1),(row-2,col+1),(row-2,col-1)]
-        for moveRow, moveCol in knightMoves:
+        knightMoves = [(-2, -1), (-2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2), (2, -1), (2, 1)]
+        for rowDiff, colDiff in knightMoves:
+            moveRow = row + rowDiff
+            moveCol = col + colDiff
             if inside(moveRow,moveCol):
                 target = board.grid[moveRow][moveCol]
                 if target == None:
@@ -160,7 +137,6 @@ class Knight(Piece):
                     if target.color != self.color:
                         moves.append((moveRow, moveCol))
         return moves
-
 
 class Board:
     def __init__(self):
@@ -201,6 +177,8 @@ class Board:
         self.grid[0][4] = Queen(0,4,"black",self.images["QueenB"])
         self.grid[7][4] = Queen(7,4,"white",self.images["QueenW"])
 
+        self.grid[0][3] = King(0,3,"black",self.images["KingB"])
+
         self.grid[0][1] = Knight(0,1,"black",self.images["KnightB"])
         self.grid[0][6] = Knight(0,6,"black",self.images["KnightB"])
         self.grid[7][1] = Knight(7,1,"white",self.images["KnightW"])
@@ -214,13 +192,11 @@ class Board:
     #an object? But that should work right?
     def move(self, piece, destRow, destCol):
         # Ensure we call get_moves with the board and check membership
-        if (destRow, destCol) in piece.get_moves(self):
-            # remove from origin
-            self.grid[piece.row][piece.col] = None
-            # update piece coords
-            piece.row, piece.col = destRow, destCol
-            # place piece object at destination
-            self.grid[destRow][destCol] = piece
+        if (destRow, destCol) not in piece.get_moves(self):
+            return False
+        self.grid[piece.row][piece.col] = None    
+        piece.row, piece.col = destRow, destCol
+        self.grid[destRow][destCol] = piece#add later for AI
         return True
 
     def draw(self, screen):
@@ -230,19 +206,31 @@ class Board:
                 if piece:
                     piece.draw(screen)
 
+import pygame
+
 class Game:
+
     def __init__(self):
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         self.clock = pygame.time.Clock()
+        self.selected_piece = None
         self.board = Board()
+        self.turn = "white"
         
     def draw_board(self):
         for row in range(8):
             for col in range(8):
                 pygame.draw.rect(self.screen, BACKGROUND_COLORS[(row + col) % 2], (col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE))
-    
+                
+    def draw_possible_moves(self):
+        if self.selected_piece != None:
+            moves = self.selected_piece.get_moves(self.board)
+            for y,x in moves:
+                pygame.draw.circle(self.screen,BACKGROUND_COLORS[2],((x*CELL_SIZE)+CELL_SIZE//2,(y*CELL_SIZE)+CELL_SIZE//2),40)
+                
     def draw(self):
         self.draw_board()
+        self.draw_possible_moves()
         self.board.draw(self.screen)
 
     def loop(self):
@@ -253,28 +241,18 @@ class Game:
                     running = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     col = event.pos[0] // CELL_SIZE
-                    row = event.pos[1] // CELL_SIZE
-                    self.handleMoves(row,col)
-            
+                    row = event.pos[1] // CELL_SIZE 
+                    if self.selected_piece is None:
+                        if self.board.grid[row][col] is not None and self.board.grid[row][col].color == self.turn:
+                            self.selected_piece = self.board.grid[row][col]
+                            print(self.board.grid[row][col])
+                    else:
+                        if self.board.move(self.selected_piece,row,col):
+                            self.turn = "white" if self.turn == "black" else "white"
+                            self.selected_piece = None
             self.draw()
             pygame.display.flip()
             self.clock.tick(60)
-    
-    def handleMoves(self, row, col):
-        piece = self.board.grid[row][col]
-        if piece is not None:
-            print("is piece")
-            waiting = True
-            while waiting:
-                for event in pygame.event.get():
-                    if event.type == pygame.MOUSEBUTTONDOWN:
-                        moveCol = event.pos[0] // CELL_SIZE
-                        moveRow = event.pos[1] // CELL_SIZE
-                        self.board.move(piece, moveRow, moveCol)
-                        waiting = False
-                    if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                        waiting = False
 
-if __name__ == "__main__":
-    game = Game()
-    game.loop()
+game = Game()
+game.loop()
