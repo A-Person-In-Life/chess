@@ -128,6 +128,24 @@ class Queen(Piece):
                     move += 1
         return moves
 
+class King(Piece):
+    def get_moves(self,board):
+        moves = []
+        row, col = self.row, self.col
+        directions = [(1,0),(1,1),(0,0),(0,1),(-1,1),(-1,-1),(-1,0),(0,-1),(1,-1)]
+        
+        for xDir, yDir in directions:
+            moveRow = row + 1 * xDir
+            moveCol = col + 1 * yDir
+            if inside(moveRow,moveCol):
+                target = board.grid[moveRow][moveCol]
+                if target == None:
+                    moves.append((moveRow, moveCol))
+                else:
+                    if target.color != self.color:
+                        moves.append((moveRow, moveCol))
+        return moves
+
 class Knight(Piece):
     def get_moves(self, board):
         moves = []
@@ -162,6 +180,8 @@ class Board:
             "QueenB": pygame.image.load("images/black_queen.png"),
             "KnightW": pygame.image.load("images/white_knight.png"),
             "KnightB": pygame.image.load("images/black_knight.png"),
+            "KingW": pygame.image.load("images/white_king.png"),
+            "KingB": pygame.image.load("images/black_king.png"),
         }
     def setup(self):
 
@@ -174,6 +194,9 @@ class Board:
         self.grid[0][5] = Bishop(0,5,"black",self.images["BishopB"])
         self.grid[7][2] = Bishop(7,2,"white",self.images["BishopW"])
         self.grid[7][5] = Bishop(7,5,"white",self.images["BishopW"])
+
+        self.grid[0][3] = King(0,3,"black",self.images["KingB"])
+        self.grid[7][3] = King(7,3,"white",self.images["KingW"])
 
         self.grid[0][4] = Queen(0,4,"black",self.images["QueenB"])
         self.grid[7][4] = Queen(7,4,"white",self.images["QueenW"])
