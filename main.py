@@ -206,8 +206,6 @@ class Board:
                 if piece:
                     piece.draw(screen)
 
-import pygame
-
 class Game:
 
     def __init__(self):
