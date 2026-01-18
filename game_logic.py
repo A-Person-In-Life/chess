@@ -175,6 +175,7 @@ class BoardState:
         return False
     
     def in_check(self, color):
+        pass
 
     def getPiece(self, row, col):
         return self.grid[row][col]
