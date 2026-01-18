@@ -90,7 +90,6 @@ class King(Piece):
                 else:
                     if target.color != self.color:
                         moves.append((moveRow, moveCol))
-            else: return True
         return moves
 
 class Knight(Piece):
@@ -116,6 +115,10 @@ class Knight(Piece):
 class BoardState:
     def __init__(self):
         self.grid = [[None for i in range(8)] for j in range(8)]
+        self.kingPos = {
+            "white": (7,3),
+            "black": (0,3)
+        }
         self.turn = "white"
         self.setup()
     
@@ -137,8 +140,6 @@ class BoardState:
         self.grid[0][4] = Queen("black")
         self.grid[7][4] = Queen("white")
 
-        self.grid[0][3] = King("black")
-
         self.grid[0][1] = Knight("black")
         self.grid[0][6] = Knight("black")
         self.grid[7][1] = Knight("white")
@@ -156,10 +157,24 @@ class BoardState:
         if (destRow, destCol) not in piece.get_moves(self, row, col):
             return False
         #possibly add move class later
+        if isinstance(piece, King):
+            self.kingPos[piece.color] = (destRow, destCol)
         self.grid[destRow][destCol] = piece
         self.grid[row][col] = None
         self.turn = "white" if self.turn == "black" else "black"
+
         return True
     
+    def is_cell_attacked(self, row, col, by_color):
+        for r in range(8):
+            for c in range(8):
+                piece = self.getPiece(r,c)
+                if piece and piece.color == by_color:
+                    if (row, col) in piece.get_moves(self, r, c):
+                        return True 
+        return False
+    
+    def in_check(self, color):
+
     def getPiece(self, row, col):
         return self.grid[row][col]
