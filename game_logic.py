@@ -175,7 +175,9 @@ class BoardState:
         return False
     
     def in_check(self, color):
-        pass
+        kingRow, kingCol = self.kingPos[color]
+        opponent_color = "white" if color == "black" else "black"
+        return self.is_cell_attacked(kingRow, kingCol, opponent_color)
 
     def getPiece(self, row, col):
         return self.grid[row][col]
