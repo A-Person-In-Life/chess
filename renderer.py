@@ -32,15 +32,12 @@ captureSound = pygame.mixer.Sound("assets/sound/capture.mp3")
 moveSound = pygame.mixer.Sound("assets/sound/move-self.mp3")
 
 def draw_possible_moves(selected):
-    piece = board.getPiece(selected[0], selected[1])
-    if piece is not None:
-        moves = piece.get_moves(board, selected[0], selected[1])
-        for row,col in moves:
-            dest=board.getPiece(row,col)
-            if dest is None:
-                pygame.draw.circle(screen,COLORS[2],((col*CELL_SIZE)+CELL_SIZE//2,(row*CELL_SIZE)+CELL_SIZE//2),40)
-            elif board.getPiece(row,col).color is not piece.color:
-                pygame.draw.circle(screen,COLORS[2],((col*CELL_SIZE)+CELL_SIZE//2,(row*CELL_SIZE)+CELL_SIZE//2),50, 8)
+    legal = board.get_legal_moves(selected[0], selected[1])
+    for move in legal:
+        if board.getPiece(move[0], move[1]) is None:
+            pygame.draw.circle(screen,COLORS[2],((move[1]*CELL_SIZE)+CELL_SIZE//2,(move[0]*CELL_SIZE)+CELL_SIZE//2),40)
+        elif board.getPiece(move[0],move[1]).color is not board.getPiece(selected[0],selected[1]).color:
+            pygame.draw.circle(screen,COLORS[2],((move[1]*CELL_SIZE)+CELL_SIZE//2,(move[0]*CELL_SIZE)+CELL_SIZE//2),50, 8)
 
 SQUARES = [pygame.Rect(c*CELL_SIZE, r*CELL_SIZE, CELL_SIZE, CELL_SIZE) for c in range(COLS) for r in range(ROWS) ]
 

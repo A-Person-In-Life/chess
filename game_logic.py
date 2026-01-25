@@ -111,6 +111,14 @@ class Knight(Piece):
                         moves.append((moveRow, moveCol))
         return moves
 
+class Move:
+    def __init__(self, piece, startRow, startCol, endRow, endCol, capturedPiece=None):
+        self.piece = piece
+        self.startRow = startRow
+        self.startCol = startCol
+        self.endRow = endRow
+        self.endCol = endCol
+        self.capturedPiece = capturedPiece
 
 class BoardState:
     def __init__(self):
@@ -120,7 +128,9 @@ class BoardState:
             "black": (0,3)
         }
         self.turn = "white"
+        self.moveLog = []
         self.setup()
+    
     
     def setup(self):
 
@@ -148,23 +158,54 @@ class BoardState:
         for c in range(8):
             self.grid[1][c] = Pawn("black")
             self.grid[6][c] = Pawn("white")
-    
-    def move(self, row, col, destRow, destCol):
-        piece = self.grid[row][col]
-        
-        if piece is None:
-            return False
-        if (destRow, destCol) not in piece.get_moves(self, row, col):
-            return False
-        #possibly add move class later
-        if isinstance(piece, King):
-            self.kingPos[piece.color] = (destRow, destCol)
-        self.grid[destRow][destCol] = piece
-        self.grid[row][col] = None
-        self.turn = "white" if self.turn == "black" else "black"
 
-        return True
+    def simulate_move(self, r1, c1, r2, c2):
+        piece = self.getPiece(r1, c1)
+        captured = self.getPiece(r2, c2)
+        #make the move
+        self.grid[r1][c1] = None
+        self.grid[r2][c2] = piece
+        
+        #update king pos
+        if isinstance(piece, King):
+            self.kingPos[piece.color] = (r2, c2)
+        move = Move(piece, r1, c1, r2, c2, captured)
+        self.moveLog.append(move)
+        self.turn = "white" if self.turn == "black" else "black"
     
+    def undo_move(self):
+        if not self.moveLog:
+            return
+        move = self.moveLog.pop()
+        self.grid[move.startRow][move.startCol] = move.piece
+        self.grid[move.endRow][move.endCol] = move.capturedPiece
+        if move.piece.name == "King":
+            self.kingPos[move.piece.color] = (move.startRow, move.startCol)
+        self.turn = "white" if self.turn == "black" else "black"
+        
+    def is_legal_move(self, r1, c1, r2, c2):
+        piece = self.getPiece(r1, c1)
+        if piece is None or piece.color != self.turn:
+            return False
+        
+        if (r2, c2) not in piece.get_moves(self, r1, c1):
+            return False
+        self.simulate_move(r1, c1, r2, c2)
+        inCheck = self.in_check(piece.color)
+        self.undo_move()
+        return not inCheck
+    
+    def get_legal_moves(self, row, col):
+        piece = self.getPiece(row, col)
+        if piece is None or piece.color != self.turn:
+            return []
+        legal = []
+        for r2, c2 in piece.get_moves(self, row, col):
+            if self.is_legal_move(row, col, r2, c2):
+                legal.append((r2, c2))
+                
+        return legal
+
     def is_cell_attacked(self, row, col, by_color):
         for r in range(8):
             for c in range(8):
@@ -178,6 +219,7 @@ class BoardState:
         kingRow, kingCol = self.kingPos[color]
         opponent_color = "white" if color == "black" else "black"
         return self.is_cell_attacked(kingRow, kingCol, opponent_color)
+        
 
     def getPiece(self, row, col):
         return self.grid[row][col]
