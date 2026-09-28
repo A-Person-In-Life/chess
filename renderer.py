@@ -1,5 +1,6 @@
-from game_logic import BoardState
 import pygame
+
+from game_logic import BoardState
 
 WIDTH, HEIGHT = 800, 800
 CELL_SIZE = WIDTH // 8
@@ -36,10 +37,13 @@ def draw_possible_moves(selected):
     for move in legal:
         if board.getPiece(move[0], move[1]) is None:
             pygame.draw.circle(screen,COLORS[2],((move[1]*CELL_SIZE)+CELL_SIZE//2,(move[0]*CELL_SIZE)+CELL_SIZE//2),40)
-        elif board.getPiece(move[0],move[1]).color is not board.getPiece(selected[0],selected[1]).color:
+        elif board.getPiece(move[0],move[1]).color != board.getPiece(selected[0],selected[1]).color:
             pygame.draw.circle(screen,COLORS[2],((move[1]*CELL_SIZE)+CELL_SIZE//2,(move[0]*CELL_SIZE)+CELL_SIZE//2),50, 8)
 
-SQUARES = [pygame.Rect(c*CELL_SIZE, r*CELL_SIZE, CELL_SIZE, CELL_SIZE) for c in range(COLS) for r in range(ROWS) ]
+SQUARES = [pygame.Rect(c*CELL_SIZE, r*CELL_SIZE, CELL_SIZE, CELL_SIZE) 
+           for r in range(ROWS) 
+           for c in range(COLS) 
+           ]
 
 def draw():
     for r in range(ROWS):
@@ -61,15 +65,24 @@ while running:
             running = False
             
         if event.type == pygame.MOUSEBUTTONDOWN:
-            col, row = pygame.mouse.get_pos()
-            col, row = col // CELL_SIZE, row // CELL_SIZE
+            x, y = pygame.mouse.get_pos()
+            col, row = x // CELL_SIZE, y // CELL_SIZE
             if selected is None:
                 piece = board.getPiece(row, col)
                 if piece and piece.color == board.turn:
                     selected = (row, col)
                     
+            elif selected == (row,col):
+                selected = None
+
+            elif board.getPiece(row, col) is not None and board.getPiece(selected[0], selected[1]).color == board.getPiece(row, col).color:
+                selected = (row, col)
+
             else:
-                board.move(selected[0],selected[1],row, col)
+                legal_moves = board.get_legal_moves(selected[0], selected[1])
+
+                if (row, col) in legal_moves:
+                    board.simulate_move(selected[0],selected[1],row, col)
                 selected = None
 
     draw()

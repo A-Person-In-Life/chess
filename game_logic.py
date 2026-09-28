@@ -29,7 +29,16 @@ class SlidingPiece(Piece):
 class Pawn(Piece):
     def __init__(self, color):
         super().__init__(color, "Pawn")
-        
+    def get_attacks(self, board, row, col):
+        attacks = []
+        side = -1 if self.color == "white" else 1
+        for colDiff in (-1, 1):
+            newRow, newCol = row + side, col + colDiff
+            if inside(newRow, newCol):
+                target = board.grid[newRow][newCol]
+                if target and target.color != self.color:
+                    attacks.append((newRow, newCol))
+        return attacks
     def get_moves(self, board, row, col):
         moves = []
         side = -1 if self.color == "white" else 1
@@ -205,13 +214,20 @@ class BoardState:
                 legal.append((r2, c2))
                 
         return legal
+    
+    def get_all_legal_moves(self, color):
+        pass
 
     def is_cell_attacked(self, row, col, by_color):
         for r in range(8):
             for c in range(8):
                 piece = self.getPiece(r,c)
                 if piece and piece.color == by_color:
-                    if (row, col) in piece.get_moves(self, r, c):
+                    if isinstance(piece, Pawn):
+                        moves = piece.get_attacks(self, r, c)
+                    else:
+                        moves = piece.get_moves(self, r, c)
+                    if (row, col) in moves:
                         return True 
         return False
     
