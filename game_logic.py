@@ -212,11 +212,23 @@ class BoardState:
         for r2, c2 in piece.get_moves(self, row, col):
             if self.is_legal_move(row, col, r2, c2):
                 legal.append((r2, c2))
-                
+
         return legal
-    
-    def get_all_legal_moves(self, color):
-        pass
+
+    def get_all_legal_moves(self, color=None):
+        if color is None:
+            color = self.turn
+        moves = []
+        for i in range(8):
+            for j in range(8):
+                piece = self.grid[i][j]
+                if piece is not None and piece.color == color:
+                    legal = self.get_legal_moves(i, j)
+                    if legal:
+                        moves.append(((i, j), legal))
+
+        return moves
+        
 
     def is_cell_attacked(self, row, col, by_color):
         for r in range(8):

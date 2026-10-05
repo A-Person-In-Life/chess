@@ -1,3 +1,5 @@
+import random
+
 import pygame
 
 from game_logic import BoardState
@@ -82,8 +84,20 @@ while running:
                 legal_moves = board.get_legal_moves(selected[0], selected[1])
 
                 if (row, col) in legal_moves:
-                    board.simulate_move(selected[0],selected[1],row, col)
+                    board.simulate_move(selected[0], selected[1], row, col)
+                    moves = board.get_all_legal_moves()
+                    if moves:
+                        start, peices = random.choice(moves)
+                        end = random.choice(peices)
+                        board.simulate_move(start[0], start[1], end[0], end[1])
                 selected = None
+
+                
+
+
+
+
+
 
     draw()
     pygame.display.flip()
