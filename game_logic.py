@@ -215,9 +215,8 @@ class BoardState:
 
         return legal
 
-    def get_all_legal_moves(self, color=None):
-        if color is None:
-            color = self.turn
+    def get_all_legal_moves(self):
+        color = self.turn
         moves = []
         for i in range(8):
             for j in range(8):

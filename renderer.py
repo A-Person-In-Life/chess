@@ -59,7 +59,8 @@ def draw():
             piece = board.getPiece(r,c)
             if piece:
                 screen.blit(images[piece.name + piece.color[0].upper()],(c*CELL_SIZE,r*CELL_SIZE))
-                
+
+"""               
 running = True
 while running:
     for event in pygame.event.get():
@@ -87,19 +88,13 @@ while running:
                     board.simulate_move(selected[0], selected[1], row, col)
                     moves = board.get_all_legal_moves()
                     if moves:
-                        start, peices = random.choice(moves)
-                        end = random.choice(peices)
+                        start, legal = random.choice(moves)
+                        end = random.choice(legal)
                         board.simulate_move(start[0], start[1], end[0], end[1])
                 selected = None
-
-                
-
-
-
-
-
 
     draw()
     pygame.display.flip()
     clock.tick(60)
 pygame.quit()
+"""
