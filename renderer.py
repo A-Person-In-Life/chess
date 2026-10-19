@@ -17,18 +17,18 @@ board = BoardState()
 selected = None
 
 images = {
-            "PawnW" : pygame.image.load("assets/images/white_pawn.bmp"),
-            "PawnB" : pygame.image.load("assets/images/black_pawn.bmp"),
-            "BishopW": pygame.image.load("assets/images/white_bishop.bmp"),
-            "BishopB": pygame.image.load("assets/images/black_bishop.bmp"),
-            "RookW": pygame.image.load("assets/images/white_rook.bmp"),
-            "RookB": pygame.image.load("assets/images/black_rook.bmp"),
-            "QueenW": pygame.image.load("assets/images/white_queen.bmp"),
-            "QueenB": pygame.image.load("assets/images/black_queen.bmp"),
-            "KnightW": pygame.image.load("assets/images/white_knight.bmp"),
-            "KnightB": pygame.image.load("assets/images/black_knight.bmp"),
-            "KingW": pygame.image.load("assets/images/white_king.bmp"),
-            "KingB": pygame.image.load("assets/images/black_king.bmp"),
+            "PawnW" : pygame.image.load("assets/images/white_pawn.png"),
+            "PawnB" : pygame.image.load("assets/images/black_pawn.png"),
+            "BishopW": pygame.image.load("assets/images/white_bishop.png"),
+            "BishopB": pygame.image.load("assets/images/black_bishop.png"),
+            "RookW": pygame.image.load("assets/images/white_rook.png"),
+            "RookB": pygame.image.load("assets/images/black_rook.png"),
+            "QueenW": pygame.image.load("assets/images/white_queen.png"),
+            "QueenB": pygame.image.load("assets/images/black_queen.png"),
+            "KnightW": pygame.image.load("assets/images/white_knight.png"),
+            "KnightB": pygame.image.load("assets/images/black_knight.png"),
+            "KingW": pygame.image.load("assets/images/white_king.png"),
+            "KingB": pygame.image.load("assets/images/black_king.png"),
             }
 
 captureSound = pygame.mixer.Sound("assets/sound/capture.mp3")
