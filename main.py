@@ -35,8 +35,6 @@ def run_gui():
   renderer.main_loop(AI())
                  
 
-
-
 if (args.headless):
   run_headless()
 else:
