@@ -60,41 +60,35 @@ def draw():
             if piece:
                 screen.blit(images[piece.name + piece.color[0].upper()],(c*CELL_SIZE,r*CELL_SIZE))
 
-"""               
-running = True
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-            
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            x, y = pygame.mouse.get_pos()
-            col, row = x // CELL_SIZE, y // CELL_SIZE
-            if selected is None:
-                piece = board.getPiece(row, col)
-                if piece and piece.color == board.turn:
+def main_loop(ai):
+    global selected
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                x, y = pygame.mouse.get_pos()
+                col, row = x // CELL_SIZE, y // CELL_SIZE
+                if selected is None:
+                    piece = board.getPiece(row, col)
+                    if piece and piece.color == board.turn:
+                        selected = (row, col)
+                        
+                elif selected == (row,col):
+                    selected = None
+
+                elif board.getPiece(row, col) is not None and board.getPiece(selected[0], selected[1]).color == board.getPiece(row, col).color:
                     selected = (row, col)
-                    
-            elif selected == (row,col):
-                selected = None
 
-            elif board.getPiece(row, col) is not None and board.getPiece(selected[0], selected[1]).color == board.getPiece(row, col).color:
-                selected = (row, col)
+                else:
+                    legal_moves = board.get_legal_moves(selected[0], selected[1])
 
-            else:
-                legal_moves = board.get_legal_moves(selected[0], selected[1])
+                    if (row, col) in legal_moves:
+                        ai.choose_move(board)
+                    selected = None
 
-                if (row, col) in legal_moves:
-                    board.simulate_move(selected[0], selected[1], row, col)
-                    moves = board.get_all_legal_moves()
-                    if moves:
-                        start, legal = random.choice(moves)
-                        end = random.choice(legal)
-                        board.simulate_move(start[0], start[1], end[0], end[1])
-                selected = None
-
-    draw()
-    pygame.display.flip()
-    clock.tick(60)
-pygame.quit()
-"""
+        draw()
+        pygame.display.flip()
+        clock.tick(60)
+    pygame.quit()

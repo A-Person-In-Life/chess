@@ -26,11 +26,16 @@ def run_headless():
         print(f"Turn {move_count}, {board.turn}, ({start_row}, {start_col}) -> ({end_row}, {end_col})")
         board.simulate_move(start_row, start_col, end_row, end_col)
         move_count += 1
+        if move_count > 500:
+          break
 
 
 def run_gui():
-   import renderer
-   pass
+  import renderer
+  renderer.main_loop(AI())
+                 
+
+
 
 if (args.headless):
   run_headless()
