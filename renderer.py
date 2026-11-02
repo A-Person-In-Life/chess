@@ -81,13 +81,15 @@ def main_loop(ai):
                 elif board.getPiece(row, col) is not None and board.getPiece(selected[0], selected[1]).color == board.getPiece(row, col).color:
                     selected = (row, col)
 
-                else:
-                    legal_moves = board.get_legal_moves(selected[0], selected[1])
-
-                    if (row, col) in legal_moves:
-                        ai.choose_move(board)
+                elif (row, col) in board.get_legal_moves(selected[0], selected[1]):
+                    board.simulate_move(selected[0], selected[1], row, col)
                     selected = None
-
+                    ai_move = ai.choose_move(board)
+                    if ai_move:
+                        r1, c1, r2, c2 = ai_move
+                        board.simulate_move(r1, c1, r2, c2)
+                else:
+                    selected = None
         draw()
         pygame.display.flip()
         clock.tick(60)

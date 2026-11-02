@@ -29,7 +29,7 @@ class MinMaxAI(AI):
 
         return moves
    
-    def evalute(self, board):
+    def evaluate(self, board):
         score = 0
         for row in range(8):
             for col in range(8):
@@ -42,10 +42,15 @@ class MinMaxAI(AI):
         return score
     def minimax(self, board, depth):
         if depth == 0:
-            return self.evalute(board)
+            return self.evaluate(board)
         moves = self.get_moves(board)
         if not moves:
-            return self.evalute(board)
+            if board.in_check(board.turn):
+                if board.turn == "white":
+                    return -9999
+                else:
+                    return 9999
+            return 0#stalemate
         if board.turn == "white":
             best_score = float("-inf")
             for move in moves:
@@ -65,7 +70,7 @@ class MinMaxAI(AI):
         return best_score
     def choose_move(self, board):
         moves = self.get_moves(board)
-        if moves is None:
+        if not moves:
             return
         best_move = None
         if board.turn == "white":
@@ -83,7 +88,7 @@ class MinMaxAI(AI):
             for move in moves:
                 r1, c1, r2, c2 = move
                 board.simulate_move(r1,c1,r2,c2)
-                score = self.minimax(board, 1)
+                score = self.minimax(board, self.depth - 1)
                 board.undo_move()
                 if score < best_score:
                     best_score = score
