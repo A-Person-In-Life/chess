@@ -1,5 +1,6 @@
 import game_logic
 import random
+import copy
 
 
 class AI:
@@ -68,6 +69,9 @@ class MinMaxAI(AI):
                 board.undo_move()
                 best_score = min(best_score, score)
         return best_score
+
+    def eval_move(self, board, move):
+        pass
     def choose_move(self, board):
         moves = self.get_moves(board)
         if not moves:
