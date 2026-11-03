@@ -1,7 +1,7 @@
 import game_logic
 import random
 import copy
-
+from concurrent.futures import ThreadPoolExecutor
 
 class AI:
     def __init__(self, depth=1):
@@ -19,8 +19,9 @@ class AI:
         return start_pos[0], start_pos[1], end_pos[0], end_pos[1]
 
 class MinMaxAI(AI):
-    def __init__(self, depth=2):
+    def __init__(self, depth=2, workers=4):
         self.values = {"King" : 0, "Queen": 8, "Rook": 5, "Bishop": 3, "Knight": 3, "Pawn": 1}
+        self.workers = workers
         super().__init__(depth)
     def get_moves(self, board):
         moves = []
@@ -71,11 +72,18 @@ class MinMaxAI(AI):
         return best_score
 
     def eval_move(self, board, move):
-        pass
+        w_board = copy.deepcopy(board)
+        r1, c1, r2, c2 = move
+        w_board.simulate_move(r1, c1, r2, c2)
+        score = self.minimax(w_board, self.depth - 1)
+        return move, score
     def choose_move(self, board):
         moves = self.get_moves(board)
         if not moves:
             return
+        with ThreadPoolExecutor(self.workers) as executor:
+            pass 
+        
         best_move = None
         if board.turn == "white":
             best_score = float("-inf")
