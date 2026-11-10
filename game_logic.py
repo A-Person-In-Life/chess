@@ -180,7 +180,7 @@ class BoardState:
             self.kingPos[piece.color] = (r2, c2)
         move = Move(piece, r1, c1, r2, c2, captured)
         self.moveLog.append(move)
-        if piece.name == "pawn" and r2 == (7 or 0):
+        if piece.name == "Pawn" and r2 == (7 or 0):
             self.grid[r2,c2] = Queen(self.turn)
 
         self.turn = "white" if self.turn == "black" else "black"
@@ -253,3 +253,20 @@ class BoardState:
 
     def getPiece(self, row, col):
         return self.grid[row][col]
+
+    def check_state(self):
+        if self.get_all_legal_moves is not None:
+            return None
+        else:
+            if self.grid.in_check(self.grid.turn):
+                if self.turn == "white":
+                    return "white"
+                else:
+                    return "black"
+              
+            else:
+                return "stalemate"
+        
+
+
+              

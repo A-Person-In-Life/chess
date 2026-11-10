@@ -9,8 +9,8 @@ args = parser.parse_args()
 def run_headless():
     board = game_logic.BoardState()
 
-    white_ai = MinMaxAI(depth=1)
-    black_ai = MinMaxAI(depth=1)
+    white_ai = MinMaxAI(depth=2)
+    black_ai = MinMaxAI(depth=2)
 
     move_count = 0
     while True:
@@ -19,13 +19,14 @@ def run_headless():
         else:
           ai = black_ai
         move = ai.choose_move(board)
-        if move is None:
-            if board.in_check(board.turn):
-              print(f"Game over, {board.turn} won")
+        state = board.check_state()
+        if state:
+            if state == "white":
+              print("white wins")
               break
-            else:
-              print("stalemate")
-              break
+            if state == "black":
+              print("black wins")
+            if state == "stalemate":
         start_row, start_col, end_row, end_col = move
         print(f"Turn {move_count}, {board.turn}, ({start_row}, {start_col}) -> ({end_row}, {end_col})")
         board.simulate_move(start_row, start_col, end_row, end_col)
@@ -33,13 +34,12 @@ def run_headless():
         if move_count > 500:
           break
 
-
 def run_gui():
   import renderer
-  renderer.main_loop(MinMaxAI(depth=10))
+  renderer.main_loop(MinMaxAI(depth=2))
                  
 
 if (args.headless):
   run_headless()
 else:
-  run_gui()
+  run_gui():

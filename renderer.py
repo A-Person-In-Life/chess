@@ -47,6 +47,12 @@ SQUARES = [pygame.Rect(c*CELL_SIZE, r*CELL_SIZE, CELL_SIZE, CELL_SIZE)
            for c in range(COLS) 
            ]
 
+def draw_game_over(result):
+    font = pygame.font.SysFont("Times New Roman", 41, bold=True)
+    text = font.render(result, True, (0,0,0))
+    rect = font.get_rect(center=(WIDTH//2, HEIGHT//2))
+    screen.blit(text, rect)
+    
 def draw():
     for r in range(ROWS):
         for c in range(COLS):
